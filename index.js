@@ -1,27 +1,8 @@
 
-// SENTRY CODE
-
-const Sentry = require("@sentry/node");
-const Tracing = require("@sentry/tracing");
-Sentry.init({
-  dsn: "https://064943ac7fa44b6b9ba7c40d543957d7@o501064.ingest.sentry.io/5581697",
-
-  // We recommend adjusting this value in production, or using tracesSampler
-  // for finer control
-  tracesSampleRate: 1.0,
-});
-const transaction = Sentry.startTransaction({
-  op: "test",
-  name: "My First Test Transaction",
-});
-
 // ================= MOD CODE      ===================
 
 const Perspective = require('perspective-api-client');
 const perspective = new Perspective({ apiKey: process.env.PERSPECTIVE });
-require('@tensorflow/tfjs');
-const toxicity = require('@tensorflow-models/toxicity');
-let ToxLocalModel = x => x
 const translatte = require('translatte');
 const BANNED_IDS = [
 
@@ -108,8 +89,6 @@ bot.on('ready', async () => {
     //Card.sendBC(bot, UsersCache)
 
     //Reaction.MakeRatings(bot, UsersCache)
-
-    ToxLocalModel = await toxicity.load(0.9)
 });
 
 const botCommands = require('./commands')
@@ -117,15 +96,17 @@ Object.keys(botCommands).map(key => {
     bot.commands.set(botCommands[key].name, botCommands[key])
 })
 
+// Mainly Moderation
 bot.on('message', async msg=>{
     'use strict'
 
     if(msg.author.bot) return;
+
+    // Refactor this mess
     if(msg.content.split(" ").filter(w=>w=="oop").length > 0) return msg.channel.send("Object Oriented Programming");
     if(msg.content.toLowerCase().includes("owo")||msg.content.toLowerCase().includes("оwо")||msg.content.toLowerCase().includes("𝗈w𝗈")||msg.content.toLowerCase().includes("uwu")) return msg.channel.send("No.");
     if(msg.content.split(" ").filter(w=>w.toLowerCase()=="doggo").length > 0) return msg.channel.send("🐶");
     if(msg.content.split(" ").filter(w=>w.toLowerCase()=="jsmagic").length > 0) return msg.channel.send(":ninja:");
-    //if(msg.content.split(" ").filter(w=>w.toLowerCase()=="god").length > 0 || msg.content.split(" ").filter(w=>w.toLowerCase()=="arkode").length > 0) return msg.channel.send("Did someone call me ?");
     if(msg.content.split(" ").filter(w=>w.toLowerCase()=="sad").length > 0) return msg.channel.send("Don't sad please \:)");
     if(msg.content.split(" ").filter(w=>w.toLowerCase()=="f").length > 0) return msg.channel.send("F");
 
@@ -179,7 +160,7 @@ bot.on('message', async msg=>{
         await user.kick({ reason })
     }
 
-    // Check for spoom
+    // Check for spam
     const original_content = msg.content
     if(msg.content.slice(0, 2) == "<:" && msg.content.slice(-1) == ">") msg.content = "";
     msg.content = msg.content
@@ -194,11 +175,7 @@ bot.on('message', async msg=>{
         if(!result.attributeScores) return;
         
         const categories = ["SPAM", "TOXICITY", "INSULT", "PROFANITY", "IDENTITY_ATTACK", "SEVERE_TOXICITY", "SEXUALLY_EXPLICIT", "FLIRTATION", "THREAT"]
-        //console.log(result)
         const scores = categories.map(cat => result.attributeScores[cat].summaryScore.value)
-        //msg.reply(Array(3).fill(0).map((x, i) => `${categories[i]}: ${scores[i]}`).join("\n"))
-        //const [tox, spam] = scores
-        //const garbo_rating = tox + 3 * Math.pow(tox, 1.5) * Math.exp(Math.pow(spam, 1.5))
         
         scores[8] = Math.pow(scores[8], 1.1)
 
@@ -211,9 +188,7 @@ bot.on('message', async msg=>{
         const matches = scores.map(x => x > THRESH ? 1 : 0).reduce((a, b) => a + b) + crit_indices.map(i => scores[i] > THRESH ? 5 : 0).reduce((a, b) => a + b)
         console.log(matches)
         if (matches > 3 || scores[5] > LOW_THRESH) {
-            //<@&729874712326307900>
             msg.reply("Our Moderator bot has reported this message to staff as potentially toxic and will be reviewed shortly.")
-            //msg.delete()
             console.log(`FLAGGED: \n${msg.content}`)
             msg.author.send(`Flagged because of: \n> ${msg.content}`)
             const report = new Discord.MessageEmbed()
@@ -233,13 +208,9 @@ bot.on('message', async msg=>{
     const args = msg.content.split(/ +/)
     const command = args.shift().toLowerCase()
 
-    //if (msg.author.id != "500738502799917066" && msg.channel.id != "740604927117754499") return save(user);
-
     if(command == "db" && msg.author.id == "500738502799917066")
         return msg.reply(eval(msg.content.slice(3), this))
     
-    //if(msg.author.id == "500738502799917066") return;
-
     if(msg.channel.id == "740604927117754499"){
         if (!bot.commands.has(command)) {msg.delete(); return save(user)};
     } else {
@@ -257,9 +228,9 @@ bot.on('message', async msg=>{
     save(user);
 })
 
+// Removed for now
 bot.on('guildMemberAdd', member=>{
     return
-    //const channel = member.guild.channels.cache.find(ch => ch.id == '729385917667606568');
     const channel = bot.channels.get("729385917667606568");
     console.log(channel)
     if (!channel) return;
@@ -281,12 +252,8 @@ const getUser = author => {
 }
 
 bot.login(process.env.DISCORD_TOKEN).catch(console.error)
-//console.log(process.env.DISCORD_TOKEN)
 
-// =============== ADMIN CONTROL =======================
-
-
-// =============== START KEEPALIVE CODE ================
+// =============== WEBSERVER CODE ================
 const express = require('express');
 const bodyParser = require("body-parser");
 const { readFileSync } = require('fs')
