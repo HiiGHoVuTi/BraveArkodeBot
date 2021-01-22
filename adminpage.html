@@ -1,0 +1,53 @@
+
+<head>
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js">  </script>
+<script>
+$(document).ready(()=>{
+    $("#send").click(()=>{
+        const [token, chanID, msgContent, code] = 
+            [$("#pwd").val(), $("#chanID").val(), $("#content").val(), $("#code").val()];
+        if(chanID && msgContent){
+            $.post("https://BraveFrenchModule-1.emixampons.repl.co/send", {
+                token, chanID, msgContent
+            })
+        }
+        if(code){
+            $.post("https://BraveFrenchModule-1.emixampons.repl.co/eval", {
+                token, code
+            })
+        }
+    })
+})
+</script>
+<style>
+    h1 {
+        font-size: 140%;
+    }
+    h2 {
+        font-size: 120%;
+    }
+</style>
+</head>
+
+
+<div><h1>Arkode Admin Password</h1>
+<input id="pwd" type="password"></input></div>
+
+<div>
+<h1> Send Message </h1>
+<h2> Channel ID </h2>
+<input id="chanID"></input>
+<h2> Message Content </h2>
+<input id = "content"></input>
+</div>
+
+<div>
+<h1> Execute Code (be careful) </h1>
+<p>
+    You'll have access to "bot", a discord client object, "uc", the UsersCache, and "go", and object for storage between different requests.
+</p>
+<h2> Code </h2>
+<textarea id="code"></textarea>
+</div>
+
+<button id="send">Send</button>
